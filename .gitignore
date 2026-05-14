@@ -1,0 +1,21 @@
+# dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+
+# env
+.env
+.env.local
+.env.*.local
+
+# Drizzle
+drizzle/*.sql
+
+# OS
+.DS_Store
+
+# Test output
+playwright-report/
+test-results/
