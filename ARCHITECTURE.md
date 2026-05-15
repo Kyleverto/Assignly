@@ -33,39 +33,32 @@ A web-based AI assistant for university students. Students log in with Google, c
 
 ## High-level diagram
 
-```
-┌─────────────────┐    HTTPS     ┌──────────────────────────┐
-│  Browser        │ ───────────► │  Next.js (Vercel)        │
-│  - Chat UI      │              │                          │
-│  - Dashboard    │              │  ┌───────────────────┐   │
-└─────────────────┘              │  │ Route Handlers    │   │
-                                 │  │  /api/chat        │   │
-                                 │  │  /api/auth/*      │   │
-                                 │  │  /api/canvas/*    │   │
-                                 │  └────────┬──────────┘   │
-                                 │           │              │
-                                 │  ┌────────▼──────────┐   │
-                                 │  │ Agent loop        │   │
-                                 │  │ (Vercel AI SDK +  │   │
-                                 │  │  OpenAI tools)    │   │
-                                 │  └────┬──────────┬───┘   │
-                                 └───────┼──────────┼───────┘
-                                         │          │
-                                ┌────────▼───┐  ┌───▼──────────┐
-                                │ OpenAI API │  │ Canvas API   │
-                                │ (gpt-4o)   │  │ (school's    │
-                                │            │  │  instance)   │
-                                └────────────┘  └──────────────┘
+```mermaid
+graph TD
+    Browser["🌐 Browser\nChat · Dashboard · Settings"]
 
-                                 ┌──────────────┐
-                                 │ Neon Postgres│
-                                 │  user        │
-                                 │  session     │
-                                 │  account     │
-                                 │  credentials │
-                                 │  threads     │
-                                 │  messages    │
-                                 └──────────────┘
+    subgraph Vercel["Vercel (Next.js 15)"]
+        Auth["Better Auth\n/api/auth/*"]
+        ChatRoute["/api/chat\nAgent Loop"]
+        CanvasRoute["/api/canvas/*\nToken · Health"]
+        Pages["Server Components\nDashboard · Onboard · Settings"]
+    end
+
+    subgraph External["External Services"]
+        Google["Google OAuth"]
+        Claude["Anthropic API\nclaude-sonnet-4-6"]
+        Canvas["Canvas LMS\nschool instance"]
+        Neon["Neon Postgres\nDrizzle ORM"]
+    end
+
+    Browser -->|HTTPS| Vercel
+    Auth -->|OAuth flow| Google
+    ChatRoute -->|streamText + tools| Claude
+    ChatRoute -->|Bearer PAT| Canvas
+    CanvasRoute -->|validate PAT| Canvas
+    Pages -->|SQL| Neon
+    Auth -->|SQL| Neon
+    ChatRoute -->|SQL persist messages| Neon
 ```
 
 ## Components
@@ -128,9 +121,39 @@ const result = await streamText({
 });
 ```
 
+### Agent loop sequence
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Chat as Chat UI
+    participant API as /api/chat
+    participant Claude as Claude (claude-sonnet-4-6)
+    participant Canvas as Canvas LMS
+    participant DB as Neon Postgres
+
+    User->>Chat: "What's due this week?"
+    Chat->>API: POST /api/chat (streaming)
+    API->>DB: Load conversation history
+    loop Up to MAX_AGENT_ITERATIONS steps
+        API->>Claude: messages + tool definitions
+        alt Claude calls a tool
+            Claude-->>API: tool_use (e.g. list_assignments)
+            API->>Canvas: GET /courses/:id/assignments
+            Canvas-->>API: Assignment data
+            API->>Claude: tool_result
+        else Claude produces final text
+            Claude-->>API: text response (done)
+        end
+    end
+    API-->>Chat: Stream response chunks
+    API->>DB: Persist thread + messages
+    Chat->>User: Display streamed answer
+```
+
 ### Tool catalog
 
-These are the OpenAI tools the agent has access to. Each is a thin wrapper around the Canvas client.
+These are the tools the agent has access to. Each is a thin wrapper around the Canvas client.
 
 | Tool | Purpose |
 |---|---|
@@ -146,6 +169,66 @@ These are the OpenAI tools the agent has access to. Each is a thin wrapper aroun
 Don't over-design this upfront — start with `list_assignments`, `list_courses`, `get_calendar`, and add the rest when the agent needs them.
 
 ## Data model
+
+```mermaid
+erDiagram
+    user {
+        text id PK
+        text email
+        text name
+        boolean email_verified
+        bigint canvas_user_id
+        text canvas_base_url
+        timestamptz created_at
+        timestamptz updated_at
+    }
+    session {
+        text id PK
+        text user_id FK
+        text token
+        timestamptz expires_at
+    }
+    account {
+        text id PK
+        text user_id FK
+        text provider_id
+        text account_id
+    }
+    canvas_credentials {
+        text user_id PK-FK
+        text kind
+        text access_token
+        timestamptz expires_at
+    }
+    threads {
+        uuid id PK
+        text user_id FK
+        text title
+        timestamptz created_at
+    }
+    messages {
+        uuid id PK
+        uuid thread_id FK
+        text role
+        jsonb content
+        timestamptz created_at
+    }
+    canvas_cache {
+        text user_id FK
+        text cache_key
+        jsonb payload
+        timestamptz expires_at
+    }
+
+    user ||--o{ session : has
+    user ||--o{ account : has
+    user ||--o| canvas_credentials : has
+    user ||--o{ threads : creates
+    user ||--o{ canvas_cache : has
+    threads ||--o{ messages : contains
+```
+
+### Table reference
 
 ```sql
 -- Better Auth core tables (managed by Better Auth, do not edit manually)
@@ -202,6 +285,43 @@ canvas_cache (
 ```
 
 ## Auth flow
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant App as Assignly
+    participant Google as Google OAuth
+    participant Canvas as Canvas LMS
+    participant DB as Neon Postgres
+
+    Note over User,DB: App login (every visit)
+    User->>App: Click "Sign in with Google"
+    App->>Google: Redirect to OAuth consent
+    Google->>User: Consent screen
+    User->>Google: Approve
+    Google->>App: Callback with auth code
+    App->>Google: Exchange code for tokens
+    App->>DB: Upsert user row, create session
+    alt First-time user (no canvas_credentials)
+        App->>User: Redirect to /onboard
+    else Returning user
+        App->>User: Redirect to /dashboard
+    end
+
+    Note over User,DB: Canvas PAT connection (one time)
+    User->>App: Enter Canvas URL + PAT
+    App->>Canvas: GET /api/v1/users/self
+    Canvas->>App: User ID + profile
+    App->>App: AES-256-GCM encrypt token
+    App->>DB: Upsert canvas_credentials
+    App->>DB: Write canvas_user_id + canvas_base_url to user row
+    App->>User: Redirect to /dashboard
+
+    Note over User,DB: Token rotation (up to every 3 months)
+    App->>Canvas: Any API call
+    Canvas->>App: 401 Unauthorized
+    App->>User: Redirect to /onboard?reason=token_expired
+```
 
 **App login (Google OAuth):**
 
