@@ -177,16 +177,16 @@ erDiagram
         text email
         text name
         boolean email_verified
-        bigint canvas_user_id
+        int canvas_user_id
         text canvas_base_url
-        timestamptz created_at
-        timestamptz updated_at
+        timestamp created_at
+        timestamp updated_at
     }
     session {
         text id PK
         text user_id FK
         text token
-        timestamptz expires_at
+        timestamp expires_at
     }
     account {
         text id PK
@@ -195,29 +195,29 @@ erDiagram
         text account_id
     }
     canvas_credentials {
-        text user_id PK-FK
+        text user_id PK
         text kind
         text access_token
-        timestamptz expires_at
+        timestamp expires_at
     }
     threads {
-        uuid id PK
+        text id PK
         text user_id FK
         text title
-        timestamptz created_at
+        timestamp created_at
     }
     messages {
-        uuid id PK
-        uuid thread_id FK
+        text id PK
+        text thread_id FK
         text role
-        jsonb content
-        timestamptz created_at
+        string content
+        timestamp created_at
     }
     canvas_cache {
         text user_id FK
         text cache_key
-        jsonb payload
-        timestamptz expires_at
+        string payload
+        timestamp expires_at
     }
 
     user ||--o{ session : has
