@@ -1,5 +1,10 @@
 import { NextRequest } from "next/server";
-import { convertToModelMessages, stepCountIs, streamText, type UIMessage } from "ai";
+import {
+  convertToModelMessages,
+  stepCountIs,
+  streamText,
+  type UIMessage,
+} from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
 import { eq, asc } from "drizzle-orm";
 import { auth } from "@/lib/auth";
@@ -34,12 +39,19 @@ export async function POST(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) return new Response("Unauthorized", { status: 401 });
 
-  const { message, id: chatId } = (await request.json()) as {
-    message: UIMessage;
+  // DefaultChatTransport sends { id, messages, trigger, messageId, ...extraBody }
+  const {
+    messages,
+    id: chatId,
+    messageId,
+  } = (await request.json()) as {
+    messages: UIMessage[];
     id: string;
+    messageId?: string;
+    trigger?: string;
   };
 
-  if (!chatId || !message) {
+  if (!chatId || !messages?.length) {
     return Response.json({ error: "missing_fields" }, { status: 400 });
   }
 
@@ -60,23 +72,16 @@ export async function POST(request: NextRequest) {
   const canvasClient = new CanvasClient(session.user.canvasBaseUrl, token);
   const tools = buildTools(canvasClient);
 
-  // Find or create thread, then load previous messages
+  // Create thread on first message
   const existingThread = await db.query.threads.findFirst({
     where: eq(threads.id, chatId),
   });
 
-  let previousMessages: UIMessage[] = [];
-
-  if (existingThread) {
-    const rows = await db
-      .select()
-      .from(messagesTable)
-      .where(eq(messagesTable.threadId, chatId))
-      .orderBy(asc(messagesTable.createdAt));
-    previousMessages = rows.map((r) => r.content as UIMessage);
-  } else {
+  if (!existingThread) {
+    const firstUserMsg = messages.find((m) => m.role === "user");
     const text =
-      message.parts.find((p) => p.type === "text")?.text ?? "New conversation";
+      firstUserMsg?.parts.find((p) => p.type === "text")?.text ??
+      "New conversation";
     const title = text.split(/\s+/).slice(0, 6).join(" ");
     await db.insert(threads).values({
       id: chatId,
@@ -85,22 +90,42 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  // Save the incoming user message before streaming
-  await db.insert(messagesTable).values({
-    threadId: chatId,
-    role: message.role,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    content: message as any,
-  });
+  // Save the new user message (identified by messageId, or fall back to last user message)
+  const newUserMsg = messageId
+    ? messages.find((m) => m.id === messageId)
+    : messages.filter((m) => m.role === "user").at(-1);
 
-  const allMessages = [...previousMessages, message];
+  if (newUserMsg) {
+    // Check if already saved (avoid duplicates on retry)
+    const rows = await db
+      .select()
+      .from(messagesTable)
+      .where(eq(messagesTable.threadId, chatId))
+      .orderBy(asc(messagesTable.createdAt));
+
+    const savedIds = new Set(
+      rows.map((r) => (r.content as UIMessage).id)
+    );
+
+    if (!savedIds.has(newUserMsg.id)) {
+      await db.insert(messagesTable).values({
+        threadId: chatId,
+        role: newUserMsg.role,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        content: newUserMsg as any,
+      });
+    }
+  }
+
+  // IDs already in the request — used to identify the new assistant message in onFinish
+  const sentIds = new Set(messages.map((m) => m.id));
 
   let result;
   try {
     result = streamText({
       model: anthropic("claude-sonnet-4-6"),
       system: buildSystemPrompt(session.user.name),
-      messages: await convertToModelMessages(allMessages, { tools }),
+      messages: await convertToModelMessages(messages, { tools }),
       tools,
       stopWhen: stepCountIs(MAX_STEPS),
     });
@@ -112,18 +137,21 @@ export async function POST(request: NextRequest) {
   }
 
   return result.toUIMessageStreamResponse({
+    originalMessages: messages,
     onFinish: async ({ messages: finalMessages }) => {
-      const assistantMsg = finalMessages[finalMessages.length - 1];
-      if (assistantMsg?.role === "assistant") {
-        await db
-          .insert(messagesTable)
-          .values({
-            threadId: chatId,
-            role: "assistant",
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            content: assistantMsg as any,
-          })
-          .catch(console.error);
+      // Save only messages that weren't in the original request (the new assistant response)
+      for (const msg of finalMessages) {
+        if (!sentIds.has(msg.id) && msg.role === "assistant") {
+          await db
+            .insert(messagesTable)
+            .values({
+              threadId: chatId,
+              role: "assistant",
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              content: msg as any,
+            })
+            .catch(console.error);
+        }
       }
     },
   });
