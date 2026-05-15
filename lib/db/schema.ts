@@ -90,7 +90,8 @@ export const canvasCredentials = pgTable(
 );
 
 export const threads = pgTable("threads", {
-  id: uuid("id").primaryKey().defaultRandom(),
+  // Client-generated ID from generateId() in @ai-sdk/react (not a UUID)
+  id: text("id").primaryKey(),
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
@@ -100,7 +101,7 @@ export const threads = pgTable("threads", {
 
 export const messages = pgTable("messages", {
   id: uuid("id").primaryKey().defaultRandom(),
-  threadId: uuid("thread_id")
+  threadId: text("thread_id")
     .notNull()
     .references(() => threads.id, { onDelete: "cascade" }),
   role: text("role").notNull(),

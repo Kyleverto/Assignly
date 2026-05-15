@@ -48,12 +48,20 @@ export default async function DashboardPage() {
           </h1>
           <p className="text-sm text-muted-foreground">Your active courses</p>
         </div>
-        <Link
-          href="/settings"
-          className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-        >
-          Settings
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/chat"
+            className={cn(buttonVariants({ size: "sm" }))}
+          >
+            Ask Assignly
+          </Link>
+          <Link
+            href="/settings"
+            className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+          >
+            Settings
+          </Link>
+        </div>
       </div>
 
       {courses.length === 0 ? (
