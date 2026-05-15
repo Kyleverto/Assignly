@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { GoogleSignInButton } from "@/components/google-sign-in-button";
 
 export default function LandingPage() {
   return (
@@ -14,9 +15,7 @@ export default function LandingPage() {
       </div>
 
       <div className="flex flex-col items-center gap-3 sm:flex-row">
-        <Link href="/onboard" className={cn(buttonVariants({ size: "lg" }))}>
-          Connect Canvas
-        </Link>
+        <GoogleSignInButton />
         <Link
           href="/onboard?demo=true"
           className={cn(buttonVariants({ variant: "outline", size: "lg" }))}

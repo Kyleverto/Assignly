@@ -13,7 +13,7 @@ A web-based AI assistant for university students. Students log in with Google, c
 **Non-goals (v1)**
 
 - No write operations into Canvas (submitting assignments, posting to discussions). Read-only keeps scope tight and the threat model simple.
-- No multi-LLM support. OpenAI only. Adding Anthropic/local models later is easy.
+- No multi-LLM support. Anthropic Claude only. Switching models is a one-line change in the agent config.
 - No native mobile app. Mobile-friendly web only.
 - No Canvas OAuth. Instructure does not issue developer keys to individual developers. Canvas connection is PAT-only.
 
@@ -23,7 +23,7 @@ A web-based AI assistant for university students. Students log in with Google, c
 |---|---|---|
 | Frontend + backend | Next.js 15 (App Router) + TypeScript | One repo, one deploy target, server components for free SSR, route handlers for the API. Hiring managers know it. |
 | UI | Tailwind CSS + shadcn/ui | Looks good out of the box, no reinventing components. |
-| AI orchestration | Vercel AI SDK (`ai` package) with OpenAI provider | First-class tool calling, streaming, and React hooks. Cuts the agent loop boilerplate. |
+| AI orchestration | Vercel AI SDK (`ai` package) with Anthropic provider (`@ai-sdk/anthropic`) | First-class tool calling, streaming, and React hooks. Claude is the model. `claude-sonnet-4-6` for the agent loop — excellent at multi-step tool use. |
 | Auth | Better Auth with Google OAuth | App-level login. Better Auth has native Drizzle + Neon support and strong TypeScript inference. Google OAuth is universally available to students without admin approval. |
 | Database | Postgres on Neon | Free tier, serverless-friendly, branches per PR if you want fancy CI. |
 | ORM | Drizzle | Lightweight, SQL-first, great TypeScript inference. |
@@ -96,11 +96,11 @@ A thin TypeScript wrapper around Canvas's REST API. Handles:
 
 ### Agent loop
 
-Vercel AI SDK's `generateText` / `streamText` with `tools` does most of the work. Conceptually:
+Vercel AI SDK's `streamText` with `tools` does most of the work. The Anthropic provider is a one-line swap from other providers. Conceptually:
 
 ```
 while (not done and iterations < MAX):
-    response = openai.chat(messages, tools=tool_specs)
+    response = claude.chat(messages, tools=tool_specs)
     if response.tool_calls:
         for call in response.tool_calls:
             result = await canvasClient[call.name](call.args)
@@ -110,7 +110,23 @@ while (not done and iterations < MAX):
         done = True
 ```
 
+Model: `claude-sonnet-4-6` — handles multi-step tool use well and is the right balance of capability and cost for this use case.
+
 `MAX` should be ~8 iterations per user turn — enough for a multi-step plan, not so many that a runaway loop bankrupts you.
+
+In code, the provider import looks like:
+```ts
+import { anthropic } from "@ai-sdk/anthropic";
+import { streamText } from "ai";
+
+const result = await streamText({
+  model: anthropic("claude-sonnet-4-6"),
+  tools,
+  maxSteps: MAX_AGENT_ITERATIONS,
+  messages,
+  system: systemPrompt,
+});
+```
 
 ### Tool catalog
 
@@ -225,10 +241,11 @@ canvas_cache (
 
 ## Cost model (rough)
 
-- OpenAI gpt-4o-mini for routing and tool dispatch, gpt-4o for synthesis when needed.
+- Single model: `claude-sonnet-4-6` for all agent turns.
 - Average user turn: ~3 tool calls, ~4k input tokens, ~600 output tokens.
-- At gpt-4o-mini's pricing, this is sub-cent per turn. Even 100 active users won't break $20/month.
-- Set hard per-user daily caps so a single bad actor can't drain your account.
+- At claude-sonnet-4-6 pricing this is a few cents per turn for heavy users, well under $1/day for typical usage. 100 active users comfortably under $50/month.
+- Set hard per-user daily token caps so a single bad actor can't drain your account.
+- If cost becomes a concern, `claude-haiku-4-5-20251001` can handle simple single-step queries cheaply — but don't optimise this prematurely.
 
 ## Repo layout
 
