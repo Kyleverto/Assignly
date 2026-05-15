@@ -41,46 +41,56 @@ export default async function DashboardPage() {
 
   return (
     <main className="mx-auto flex max-w-2xl flex-col gap-8 px-4 py-12">
+      {/* Top bar */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            Hey, {sessionUser.name.split(" ")[0]}
-          </h1>
-          <p className="text-sm text-muted-foreground">Your active courses</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Link
-            href="/chat"
-            className={cn(buttonVariants({ size: "sm" }))}
-          >
-            Ask Assignly
-          </Link>
-          <Link
-            href="/settings"
-            className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-          >
-            Settings
-          </Link>
-        </div>
+        <h1 className="text-2xl font-bold tracking-tight">
+          Hey, {sessionUser.name.split(" ")[0]}
+        </h1>
+        <Link
+          href="/settings"
+          className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
+        >
+          Settings
+        </Link>
       </div>
 
-      {courses.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
-          No active courses found in Canvas.
-        </p>
-      ) : (
-        <ul className="flex flex-col gap-3">
-          {courses.map((course) => (
-            <li
-              key={course.id}
-              className="rounded-xl border border-border bg-card px-5 py-4"
-            >
-              <p className="font-medium">{course.name}</p>
-              <p className="text-sm text-muted-foreground">{course.course_code}</p>
-            </li>
-          ))}
-        </ul>
-      )}
+      {/* Hero CTA */}
+      <div className="flex flex-col items-center gap-4 rounded-2xl border border-border bg-card px-6 py-10 text-center shadow-sm">
+        <div className="flex flex-col gap-1">
+          <p className="text-lg font-semibold">What do you need help with?</p>
+          <p className="text-sm text-muted-foreground">
+            Ask about due dates, grades, assignments, or anything on your Canvas.
+          </p>
+        </div>
+        <Link
+          href="/chat"
+          className={cn(buttonVariants({ size: "lg" }), "px-10")}
+        >
+          Ask Assignly
+        </Link>
+      </div>
+
+      {/* Course list */}
+      <div className="flex flex-col gap-3">
+        <p className="text-sm font-medium text-muted-foreground">Your active courses</p>
+        {courses.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No active courses found in Canvas.
+          </p>
+        ) : (
+          <ul className="flex flex-col gap-3">
+            {courses.map((course) => (
+              <li
+                key={course.id}
+                className="rounded-xl border border-border bg-card px-5 py-4"
+              >
+                <p className="font-medium">{course.name}</p>
+                <p className="text-sm text-muted-foreground">{course.course_code}</p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </main>
   );
 }

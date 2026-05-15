@@ -6,7 +6,7 @@ import {
   type UIMessage,
 } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
-import { eq, asc } from "drizzle-orm";
+import { eq, asc, and, gte, count } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import {
@@ -20,6 +20,9 @@ import { CanvasError } from "@/lib/canvas/types";
 import { buildTools } from "@/lib/agent/tools";
 
 const MAX_STEPS = parseInt(process.env.MAX_AGENT_ITERATIONS ?? "8");
+const RATE_LIMIT_MESSAGES = 20; // max user messages per window
+const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
+const MAX_TOKENS_PER_RESPONSE = 2048;
 
 function buildSystemPrompt(userName: string): string {
   const today = new Date().toLocaleDateString("en-US", {
@@ -53,6 +56,27 @@ export async function POST(request: NextRequest) {
 
   if (!chatId || !messages?.length) {
     return Response.json({ error: "missing_fields" }, { status: 400 });
+  }
+
+  // Rate limit: max 20 user messages per 10 minutes per user (DB-backed, works on serverless)
+  const windowStart = new Date(Date.now() - RATE_LIMIT_WINDOW_MS);
+  const [{ value: recentCount }] = await db
+    .select({ value: count() })
+    .from(messagesTable)
+    .innerJoin(threads, eq(messagesTable.threadId, threads.id))
+    .where(
+      and(
+        eq(threads.userId, session.user.id),
+        eq(messagesTable.role, "user"),
+        gte(messagesTable.createdAt, windowStart)
+      )
+    );
+
+  if (recentCount >= RATE_LIMIT_MESSAGES) {
+    return Response.json(
+      { error: "You've sent too many messages. Please wait a few minutes before trying again." },
+      { status: 429 }
+    );
   }
 
   const cred = await db.query.canvasCredentials.findFirst({
@@ -128,6 +152,7 @@ export async function POST(request: NextRequest) {
       messages: await convertToModelMessages(messages, { tools }),
       tools,
       stopWhen: stepCountIs(MAX_STEPS),
+      maxOutputTokens: MAX_TOKENS_PER_RESPONSE,
     });
   } catch (err) {
     if (err instanceof CanvasError && err.status === 401) {
