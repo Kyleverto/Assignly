@@ -13,6 +13,9 @@ out/
 .env.local
 .env.*.local
 
+#personal document
+INTERVIEW_PREP.md
+
 # Drizzle
 drizzle/*.sql
 

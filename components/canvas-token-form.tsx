@@ -67,12 +67,15 @@ export function CanvasTokenForm({
         <input
           id="canvasBaseUrl"
           type="url"
-          placeholder="https://school.instructure.edu"
+          placeholder="https://canvas.yourschool.edu"
           value={canvasBaseUrl}
           onChange={(e) => setCanvasBaseUrl(e.target.value)}
           required
           className="rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
         />
+        <p className="text-xs text-muted-foreground">
+          The address you use to log in to Canvas — include the full URL with https://
+        </p>
       </div>
 
       <div className="flex flex-col gap-1.5">
@@ -82,14 +85,14 @@ export function CanvasTokenForm({
         <input
           id="accessToken"
           type="password"
-          placeholder="Paste your Canvas access token"
+          placeholder="Paste your token here"
           value={accessToken}
           onChange={(e) => setAccessToken(e.target.value)}
           required
           className="rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
         />
         <p className="text-xs text-muted-foreground">
-          Canvas → Account → Settings → New Access Token
+          Generated in Canvas under Account → Settings → Approved Integrations
         </p>
       </div>
 
