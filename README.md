@@ -2,7 +2,7 @@
 
 An AI assistant for university students. Connect your Canvas account, then ask questions in plain English — "What's due this week?", "What's my grade in CS 301?", "Summarize the announcements from my professors" — and get real answers pulled live from your Canvas data.
 
-**[Live demo →](https://assignly.vercel.app)** (no Canvas account needed — try the demo login)
+**[Live demo →](https://assignly.dev)** (no Canvas account needed — try the demo login)
 
 ---
 
@@ -50,18 +50,18 @@ Each tool is a thin wrapper around the Canvas REST API. The model chooses which 
 
 ## Tech stack
 
-| Layer | Choice |
-|---|---|
-| Framework | Next.js 15 (App Router) |
-| Language | TypeScript |
-| UI | Tailwind CSS + shadcn/ui |
-| AI | Vercel AI SDK + Anthropic (`claude-sonnet-4-6`) |
-| Auth | Better Auth (Google OAuth + email/password for demo) |
-| Database | Neon (serverless Postgres) |
-| ORM | Drizzle |
-| Hosting | Vercel |
-| Tests | Vitest (unit + integration) |
-| CI | GitHub Actions |
+| Layer     | Choice                                               |
+| --------- | ---------------------------------------------------- |
+| Framework | Next.js 15 (App Router)                              |
+| Language  | TypeScript                                           |
+| UI        | Tailwind CSS + shadcn/ui                             |
+| AI        | Vercel AI SDK + Anthropic (`claude-sonnet-4-6`)      |
+| Auth      | Better Auth (Google OAuth + email/password for demo) |
+| Database  | Neon (serverless Postgres)                           |
+| ORM       | Drizzle                                              |
+| Hosting   | Vercel                                               |
+| Tests     | Vitest (unit + integration)                          |
+| CI        | GitHub Actions                                       |
 
 ---
 
@@ -99,18 +99,18 @@ Visit `http://localhost:3000`.
 
 ### Environment variables
 
-| Variable | Description |
-|---|---|
-| `NEXT_PUBLIC_APP_URL` | Your app URL (e.g. `http://localhost:3000`) |
-| `BETTER_AUTH_SECRET` | Random 32+ char string (`openssl rand -hex 32`) |
-| `BETTER_AUTH_URL` | Same as `NEXT_PUBLIC_APP_URL` |
-| `DATABASE_URL` | Neon Postgres connection string |
-| `TOKEN_ENCRYPTION_KEY` | 64 hex chars (`openssl rand -hex 32`) |
-| `ANTHROPIC_API_KEY` | Anthropic API key |
-| `AUTH_GOOGLE_CLIENT_ID` | Google OAuth client ID |
-| `AUTH_GOOGLE_CLIENT_SECRET` | Google OAuth client secret |
-| `DEMO_USER_PASSWORD` | Password for the shared demo account |
-| `MAX_AGENT_ITERATIONS` | Max tool-call steps per turn (default: 8) |
+| Variable                    | Description                                     |
+| --------------------------- | ----------------------------------------------- |
+| `NEXT_PUBLIC_APP_URL`       | Your app URL (e.g. `http://localhost:3000`)     |
+| `BETTER_AUTH_SECRET`        | Random 32+ char string (`openssl rand -hex 32`) |
+| `BETTER_AUTH_URL`           | Same as `NEXT_PUBLIC_APP_URL`                   |
+| `DATABASE_URL`              | Neon Postgres connection string                 |
+| `TOKEN_ENCRYPTION_KEY`      | 64 hex chars (`openssl rand -hex 32`)           |
+| `ANTHROPIC_API_KEY`         | Anthropic API key                               |
+| `AUTH_GOOGLE_CLIENT_ID`     | Google OAuth client ID                          |
+| `AUTH_GOOGLE_CLIENT_SECRET` | Google OAuth client secret                      |
+| `DEMO_USER_PASSWORD`        | Password for the shared demo account            |
+| `MAX_AGENT_ITERATIONS`      | Max tool-call steps per turn (default: 8)       |
 
 ---
 
@@ -145,11 +145,11 @@ npm run lint
 
 ### Test architecture
 
-| Layer | Tool | What it covers |
-|---|---|---|
-| Unit | Vitest + msw | Crypto round-trips, Canvas client pagination and error handling, Canvas DB cache |
-| Integration | Vitest + msw | Full `POST /api/chat` → tool call → DB persistence with mocked Anthropic |
-| Type safety | `tsc --noEmit` | Run in CI on every push |
+| Layer       | Tool           | What it covers                                                                   |
+| ----------- | -------------- | -------------------------------------------------------------------------------- |
+| Unit        | Vitest + msw   | Crypto round-trips, Canvas client pagination and error handling, Canvas DB cache |
+| Integration | Vitest + msw   | Full `POST /api/chat` → tool call → DB persistence with mocked Anthropic         |
+| Type safety | `tsc --noEmit` | Run in CI on every push                                                          |
 
 The integration test (`tests/integration/agent-loop.test.ts`) is the centrepiece: it intercepts the Anthropic API at the HTTP level using msw, runs the real agent loop against demo Canvas data, and asserts that the thread and messages are correctly persisted to the database. It proves the full pipeline without requiring a real Anthropic API call or live Canvas account.
 
@@ -160,6 +160,7 @@ The integration test (`tests/integration/agent-loop.test.ts`) is the centrepiece
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Kyleverto/Assignly)
 
 After deploying:
+
 1. Add all environment variables in the Vercel dashboard
 2. Add your Vercel deployment URL as an authorized redirect URI in your Google OAuth app (`https://your-app.vercel.app/api/auth/callback/google`)
 3. Redeploy
