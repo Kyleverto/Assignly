@@ -168,6 +168,9 @@ export function buildTools(canvasClient: AnyCanvasClient) {
           const courseName = courseMap.get(courseId) ?? `Course ${courseId}`;
           return { course_name: courseName, modules };
         }),
+      providerOptions: {
+        anthropic: { cacheControl: { type: "ephemeral" } },
+      },
     }),
   };
 }

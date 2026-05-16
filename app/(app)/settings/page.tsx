@@ -5,7 +5,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { CanvasTokenForm } from "@/components/canvas-token-form";
 import { signOut } from "@/lib/auth/client";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Sun, Moon, Monitor } from "lucide-react";
+import { useTheme } from "next-themes";
 
 interface HealthResponse {
   ok: boolean;
@@ -17,6 +18,7 @@ interface HealthResponse {
 export default function SettingsPage() {
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [showUpdateForm, setShowUpdateForm] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     fetch("/api/canvas/health")
@@ -105,6 +107,34 @@ export default function SettingsPage() {
             )}
           </>
         )}
+      </section>
+
+      {/* Appearance */}
+      <section className="flex flex-col gap-4 rounded-xl border border-border bg-card px-5 py-5">
+        <p className="font-medium">Appearance</p>
+        <div className="flex items-center gap-2">
+          {(
+            [
+              { value: "light", label: "Light", Icon: Sun },
+              { value: "system", label: "System", Icon: Monitor },
+              { value: "dark",  label: "Dark",   Icon: Moon },
+            ] as const
+          ).map(({ value, label, Icon }) => (
+            <button
+              key={value}
+              onClick={() => setTheme(value)}
+              className={[
+                "flex flex-1 items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors",
+                theme === value
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-background text-muted-foreground hover:text-foreground",
+              ].join(" ")}
+            >
+              <Icon className="size-4" />
+              {label}
+            </button>
+          ))}
+        </div>
       </section>
 
       {/* Account */}
