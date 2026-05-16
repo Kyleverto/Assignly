@@ -36,7 +36,7 @@ export function CanvasTokenForm({
         body: JSON.stringify({ canvasBaseUrl, accessToken }),
       });
 
-      const data = await res.json() as { error?: string };
+      const data = (await res.json()) as { error?: string };
 
       if (!res.ok) {
         setError(data.error ?? "Something went wrong. Please try again.");
@@ -56,7 +56,10 @@ export function CanvasTokenForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full max-w-md">
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-col gap-4 w-full max-w-md"
+    >
       <div className="flex flex-col gap-1.5">
         <label htmlFor="canvasBaseUrl" className="text-sm font-medium">
           Canvas URL
@@ -64,7 +67,7 @@ export function CanvasTokenForm({
         <input
           id="canvasBaseUrl"
           type="url"
-          placeholder="https://canvas.university.edu"
+          placeholder="https://school.instructure.edu"
           value={canvasBaseUrl}
           onChange={(e) => setCanvasBaseUrl(e.target.value)}
           required
