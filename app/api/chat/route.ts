@@ -38,7 +38,9 @@ function buildSystemPrompt(userName: string): string {
 Today is ${today}.
 You are helping ${userName}.
 
-Use your Canvas tools whenever you need data to answer the student's question. When listing assignments, organize by due date and include the course name. Be concise and helpful.
+Use your Canvas tools whenever you need data to answer the student's question. Be concise and helpful.
+
+Important: every tool result includes a course_name field. Always refer to courses by their name (e.g. "Calculus II"), never by a raw numeric ID. When listing assignments or grades, organize by due date or course name as appropriate.
 
 If you reach the end of your allowed steps without a complete answer, tell the student what you found so far and suggest they ask a more focused question.`;
 }
