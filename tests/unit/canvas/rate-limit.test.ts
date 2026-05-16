@@ -1,8 +1,13 @@
-import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, afterEach, vi } from "vitest";
 import { setupServer } from "msw/node";
 import { http, HttpResponse } from "msw";
 import { CanvasClient } from "@/lib/canvas/client";
 import { CanvasError } from "@/lib/canvas/types";
+
+vi.mock("@/lib/canvas/cache", () => ({
+  getCached: vi.fn().mockResolvedValue(null),
+  setCached: vi.fn().mockResolvedValue(undefined),
+}));
 
 const BASE = "https://canvas.test.edu";
 
