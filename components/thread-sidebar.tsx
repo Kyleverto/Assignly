@@ -1,8 +1,9 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { MessageSquarePlus } from "lucide-react";
+import { MessageSquarePlus, Trash2 } from "lucide-react";
+import { useState } from "react";
 
 interface Thread {
   id: string;
@@ -11,6 +12,25 @@ interface Thread {
 
 export function ThreadSidebar({ threads }: { threads: Thread[] }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  async function handleDelete(e: React.MouseEvent, threadId: string) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!window.confirm("Delete this conversation? This can't be undone.")) return;
+
+    setDeletingId(threadId);
+    try {
+      await fetch(`/api/threads/${threadId}`, { method: "DELETE" });
+      router.refresh();
+      if (pathname === `/chat/${threadId}`) {
+        router.push("/chat");
+      }
+    } finally {
+      setDeletingId(null);
+    }
+  }
 
   return (
     <aside className="hidden sm:flex w-60 flex-shrink-0 flex-col border-r border-border bg-muted/20">
@@ -35,18 +55,35 @@ export function ThreadSidebar({ threads }: { threads: Thread[] }) {
         ) : (
           threads.map((thread) => {
             const isActive = pathname === `/chat/${thread.id}`;
+            const isDeleting = deletingId === thread.id;
             return (
-              <Link
+              <div
                 key={thread.id}
-                href={`/chat/${thread.id}`}
-                className={`block truncate rounded-md mx-1 px-3 py-2 text-sm transition-colors ${
+                className={`group relative mx-1 flex items-center rounded-md transition-colors ${
                   isActive
-                    ? "bg-muted font-medium text-foreground"
-                    : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                    ? "bg-muted"
+                    : "hover:bg-muted/60"
                 }`}
               >
-                {thread.title ?? "New conversation"}
-              </Link>
+                <Link
+                  href={`/chat/${thread.id}`}
+                  className={`min-w-0 flex-1 truncate px-3 py-2 text-sm ${
+                    isActive
+                      ? "font-medium text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {thread.title ?? "New conversation"}
+                </Link>
+                <button
+                  onClick={(e) => handleDelete(e, thread.id)}
+                  disabled={isDeleting}
+                  aria-label="Delete conversation"
+                  className="mr-1 flex rounded p-1 text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100 disabled:opacity-50"
+                >
+                  <Trash2 className="size-3.5" />
+                </button>
+              </div>
             );
           })
         )}

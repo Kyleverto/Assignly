@@ -36,7 +36,9 @@ function buildSystemPrompt(userName: string): string {
 Today is ${today}.
 You are helping ${userName}.
 
-Use your Canvas tools whenever you need data to answer the student's question. When listing assignments, organize by due date and include the course name. Be concise and helpful.`;
+Use your Canvas tools whenever you need data to answer the student's question. When listing assignments, organize by due date and include the course name. Be concise and helpful.
+
+If you reach the end of your allowed steps without a complete answer, tell the student what you found so far and suggest they ask a more focused question.`;
 }
 
 export async function POST(request: NextRequest) {
@@ -99,7 +101,7 @@ export async function POST(request: NextRequest) {
     } catch {
       return Response.json({ error: "decrypt_failed" }, { status: 500 });
     }
-    canvasClient = new CanvasClient(session.user.canvasBaseUrl, token);
+    canvasClient = new CanvasClient(session.user.canvasBaseUrl, token, session.user.id);
   }
 
   const tools = buildTools(canvasClient);

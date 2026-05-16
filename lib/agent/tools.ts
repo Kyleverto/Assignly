@@ -2,8 +2,22 @@ import { tool } from "ai";
 import { z } from "zod";
 import type { CanvasClient } from "@/lib/canvas/client";
 import type { DemoCanvasClient } from "@/lib/canvas/demo-client";
+import { CanvasError } from "@/lib/canvas/types";
 
 type AnyCanvasClient = CanvasClient | DemoCanvasClient;
+
+const TOKEN_EXPIRED_MESSAGE =
+  "Your Canvas access token has expired or is no longer valid. " +
+  "Please go to Settings to update it, then try again.";
+
+function wrapCanvasCall<T>(fn: () => Promise<T>): Promise<T | string> {
+  return fn().catch((err) => {
+    if (err instanceof CanvasError && err.status === 401) {
+      return TOKEN_EXPIRED_MESSAGE;
+    }
+    throw err;
+  });
+}
 
 export function buildTools(canvasClient: AnyCanvasClient) {
   return {
@@ -24,9 +38,8 @@ export function buildTools(canvasClient: AnyCanvasClient) {
           .optional()
           .describe("ISO 8601 datetime. Return only assignments due after this."),
       }),
-      execute: async ({ courseId, dueBefore, dueAfter }) => {
-        return canvasClient.listAssignments({ courseId, dueBefore, dueAfter });
-      },
+      execute: ({ courseId, dueBefore, dueAfter }) =>
+        wrapCanvasCall(() => canvasClient.listAssignments({ courseId, dueBefore, dueAfter })),
     }),
 
     get_assignment: tool({
@@ -36,9 +49,8 @@ export function buildTools(canvasClient: AnyCanvasClient) {
         courseId: z.number().describe("Canvas course ID."),
         assignmentId: z.number().describe("Canvas assignment ID."),
       }),
-      execute: async ({ courseId, assignmentId }) => {
-        return canvasClient.getAssignment(courseId, assignmentId);
-      },
+      execute: ({ courseId, assignmentId }) =>
+        wrapCanvasCall(() => canvasClient.getAssignment(courseId, assignmentId)),
     }),
 
     get_calendar: tool({
@@ -52,9 +64,8 @@ export function buildTools(canvasClient: AnyCanvasClient) {
           .string()
           .describe("ISO 8601 date (YYYY-MM-DD). End of the range."),
       }),
-      execute: async ({ startDate, endDate }) => {
-        return canvasClient.getCalendar(startDate, endDate);
-      },
+      execute: ({ startDate, endDate }) =>
+        wrapCanvasCall(() => canvasClient.getCalendar(startDate, endDate)),
     }),
 
     list_announcements: tool({
@@ -66,18 +77,15 @@ export function buildTools(canvasClient: AnyCanvasClient) {
           .optional()
           .describe("Canvas course ID. Omit to fetch from all enrolled courses."),
       }),
-      execute: async ({ courseId }) => {
-        return canvasClient.listAnnouncements(courseId);
-      },
+      execute: ({ courseId }) =>
+        wrapCanvasCall(() => canvasClient.listAnnouncements(courseId)),
     }),
 
     get_grades: tool({
       description:
         "Fetch the student's current grades (scores and letter grades) for all enrolled courses.",
       inputSchema: z.object({}),
-      execute: async () => {
-        return canvasClient.getGrades();
-      },
+      execute: () => wrapCanvasCall(() => canvasClient.getGrades()),
     }),
 
     list_modules: tool({
@@ -86,9 +94,8 @@ export function buildTools(canvasClient: AnyCanvasClient) {
       inputSchema: z.object({
         courseId: z.number().describe("Canvas course ID."),
       }),
-      execute: async ({ courseId }) => {
-        return canvasClient.listModules(courseId);
-      },
+      execute: ({ courseId }) =>
+        wrapCanvasCall(() => canvasClient.listModules(courseId)),
     }),
   };
 }
