@@ -91,6 +91,12 @@ export class DemoCanvasClient {
   async listModules(courseId: number): Promise<CanvasModule[]> {
     return modules
       .filter((m) => m.course_id === courseId)
-      .map(({ course_id: _cid, ...rest }) => rest as CanvasModule);
+      .map((m) => ({
+        id: m.id,
+        name: m.name,
+        position: m.position,
+        workflow_state: m.workflow_state,
+        items_count: m.items_count,
+      }));
   }
 }
