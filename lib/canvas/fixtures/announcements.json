@@ -1,0 +1,23 @@
+[
+  {
+    "id": 2001,
+    "title": "Office hours moved — this week only",
+    "message": "Due to a faculty meeting, office hours this Thursday are moved to 3–5 PM in ENG 204. The Friday session remains the same.",
+    "posted_at": "2026-05-14T10:30:00Z",
+    "context_code": "course_101"
+  },
+  {
+    "id": 2002,
+    "title": "Midterm review session — Monday 6 PM",
+    "message": "Join us Monday evening for a 90-minute midterm review covering eigenvalues, vector spaces, and orthogonality. Zoom link in the course calendar.",
+    "posted_at": "2026-05-13T15:00:00Z",
+    "context_code": "course_102"
+  },
+  {
+    "id": 2003,
+    "title": "Proposal draft grading rubric posted",
+    "message": "The grading rubric for the Technical Proposal Draft has been posted to the Files section. Please review it before submitting on Monday.",
+    "posted_at": "2026-05-12T09:00:00Z",
+    "context_code": "course_103"
+  }
+]

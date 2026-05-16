@@ -16,6 +16,7 @@ import {
 } from "@/lib/db/schema";
 import { decrypt } from "@/lib/crypto";
 import { CanvasClient } from "@/lib/canvas/client";
+import { DemoCanvasClient } from "@/lib/canvas/demo-client";
 import { CanvasError } from "@/lib/canvas/types";
 import { buildTools } from "@/lib/agent/tools";
 
@@ -86,14 +87,21 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "no_canvas_connection" }, { status: 403 });
   }
 
-  let token: string;
-  try {
-    token = decrypt(cred.accessToken);
-  } catch {
-    return Response.json({ error: "decrypt_failed" }, { status: 500 });
+  const isDemo = session.user.canvasBaseUrl === "demo";
+  let canvasClient: CanvasClient | DemoCanvasClient;
+
+  if (isDemo) {
+    canvasClient = new DemoCanvasClient();
+  } else {
+    let token: string;
+    try {
+      token = decrypt(cred.accessToken);
+    } catch {
+      return Response.json({ error: "decrypt_failed" }, { status: 500 });
+    }
+    canvasClient = new CanvasClient(session.user.canvasBaseUrl, token);
   }
 
-  const canvasClient = new CanvasClient(session.user.canvasBaseUrl, token);
   const tools = buildTools(canvasClient);
 
   // Create thread on first message

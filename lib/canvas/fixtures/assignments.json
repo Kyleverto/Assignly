@@ -1,0 +1,90 @@
+[
+  {
+    "id": 1001,
+    "course_id": 101,
+    "name": "Graph Traversal Problem Set",
+    "due_at": "2026-05-17T23:59:00Z",
+    "points_possible": 100,
+    "description": "Implement BFS and DFS on an undirected graph. Include time complexity analysis for each approach.",
+    "submission_types": ["online_upload"],
+    "has_submitted_submissions": false,
+    "workflow_state": "published"
+  },
+  {
+    "id": 1002,
+    "course_id": 101,
+    "name": "Midterm Exam — Binary Trees",
+    "due_at": "2026-05-22T17:00:00Z",
+    "points_possible": 150,
+    "description": "In-class midterm covering binary trees, BSTs, AVL trees, and heaps.",
+    "submission_types": ["on_paper"],
+    "has_submitted_submissions": false,
+    "workflow_state": "published"
+  },
+  {
+    "id": 1003,
+    "course_id": 101,
+    "name": "Dynamic Programming Assignment",
+    "due_at": "2026-05-29T23:59:00Z",
+    "points_possible": 100,
+    "description": "Solve 4 classic DP problems: Knapsack, LCS, Edit Distance, and Coin Change. Include memoization and bottom-up solutions.",
+    "submission_types": ["online_upload"],
+    "has_submitted_submissions": false,
+    "workflow_state": "published"
+  },
+  {
+    "id": 1004,
+    "course_id": 102,
+    "name": "Matrix Operations Quiz",
+    "due_at": "2026-05-18T15:00:00Z",
+    "points_possible": 50,
+    "description": "Short quiz on matrix multiplication, transposition, and determinants.",
+    "submission_types": ["online_quiz"],
+    "has_submitted_submissions": false,
+    "workflow_state": "published"
+  },
+  {
+    "id": 1005,
+    "course_id": 102,
+    "name": "Eigenvalues and Eigenvectors Homework",
+    "due_at": "2026-05-24T23:59:00Z",
+    "points_possible": 75,
+    "description": "Problems 4.1–4.6 from the textbook covering eigenvalue decomposition and characteristic polynomials.",
+    "submission_types": ["online_upload"],
+    "has_submitted_submissions": false,
+    "workflow_state": "published"
+  },
+  {
+    "id": 1006,
+    "course_id": 102,
+    "name": "Final Project — Applications of Linear Algebra",
+    "due_at": "2026-06-05T23:59:00Z",
+    "points_possible": 200,
+    "description": "Research paper or implementation project applying linear algebra to a real-world domain (image compression, ML, network analysis, etc.).",
+    "submission_types": ["online_upload"],
+    "has_submitted_submissions": false,
+    "workflow_state": "published"
+  },
+  {
+    "id": 1007,
+    "course_id": 103,
+    "name": "Technical Proposal Draft",
+    "due_at": "2026-05-19T23:59:00Z",
+    "points_possible": 60,
+    "description": "First draft of your technical proposal. Should include problem statement, proposed solution, timeline, and audience analysis.",
+    "submission_types": ["online_upload"],
+    "has_submitted_submissions": false,
+    "workflow_state": "published"
+  },
+  {
+    "id": 1008,
+    "course_id": 103,
+    "name": "Peer Review Submission",
+    "due_at": "2026-05-26T23:59:00Z",
+    "points_possible": 40,
+    "description": "Provide structured peer feedback for two classmates' technical proposals using the provided rubric.",
+    "submission_types": ["online_upload"],
+    "has_submitted_submissions": false,
+    "workflow_state": "published"
+  }
+]

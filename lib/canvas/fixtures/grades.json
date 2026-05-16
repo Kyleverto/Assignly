@@ -1,0 +1,20 @@
+[
+  {
+    "type": "StudentEnrollment",
+    "course_id": 101,
+    "computed_current_score": 88.5,
+    "computed_current_grade": "B+"
+  },
+  {
+    "type": "StudentEnrollment",
+    "course_id": 102,
+    "computed_current_score": 92.0,
+    "computed_current_grade": "A-"
+  },
+  {
+    "type": "StudentEnrollment",
+    "course_id": 103,
+    "computed_current_score": 95.5,
+    "computed_current_grade": "A"
+  }
+]

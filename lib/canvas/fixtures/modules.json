@@ -1,0 +1,74 @@
+[
+  {
+    "id": 4001,
+    "course_id": 101,
+    "name": "Module 1 – Sorting and Searching",
+    "position": 1,
+    "workflow_state": "active",
+    "items_count": 8
+  },
+  {
+    "id": 4002,
+    "course_id": 101,
+    "name": "Module 2 – Trees and Heaps",
+    "position": 2,
+    "workflow_state": "active",
+    "items_count": 10
+  },
+  {
+    "id": 4003,
+    "course_id": 101,
+    "name": "Module 3 – Graphs",
+    "position": 3,
+    "workflow_state": "active",
+    "items_count": 9
+  },
+  {
+    "id": 4004,
+    "course_id": 101,
+    "name": "Module 4 – Dynamic Programming",
+    "position": 4,
+    "workflow_state": "active",
+    "items_count": 7
+  },
+  {
+    "id": 4005,
+    "course_id": 102,
+    "name": "Unit 1 – Vectors and Matrices",
+    "position": 1,
+    "workflow_state": "active",
+    "items_count": 6
+  },
+  {
+    "id": 4006,
+    "course_id": 102,
+    "name": "Unit 2 – Linear Transformations",
+    "position": 2,
+    "workflow_state": "active",
+    "items_count": 8
+  },
+  {
+    "id": 4007,
+    "course_id": 102,
+    "name": "Unit 3 – Eigenvalues and Decomposition",
+    "position": 3,
+    "workflow_state": "active",
+    "items_count": 9
+  },
+  {
+    "id": 4008,
+    "course_id": 103,
+    "name": "Part 1 – Technical Communication Principles",
+    "position": 1,
+    "workflow_state": "active",
+    "items_count": 5
+  },
+  {
+    "id": 4009,
+    "course_id": 103,
+    "name": "Part 2 – Proposals and Reports",
+    "position": 2,
+    "workflow_state": "active",
+    "items_count": 7
+  }
+]

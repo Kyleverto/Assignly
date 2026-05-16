@@ -17,7 +17,7 @@ export default function LandingPage() {
       <div className="flex flex-col items-center gap-3 sm:flex-row">
         <GoogleSignInButton />
         <Link
-          href="/onboard?demo=true"
+          href="/api/auth/demo"
           className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
         >
           Try Demo

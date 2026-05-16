@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { canvasCredentials } from "@/lib/db/schema";
 import { decrypt } from "@/lib/crypto";
 import { CanvasClient } from "@/lib/canvas/client";
+import { DemoCanvasClient } from "@/lib/canvas/demo-client";
 import { CanvasError } from "@/lib/canvas/types";
 import { eq } from "drizzle-orm";
 import Link from "next/link";
@@ -28,15 +29,19 @@ export default async function DashboardPage() {
   if (!creds || !sessionUser.canvasBaseUrl) redirect("/onboard");
 
   let courses;
-  try {
-    const token = decrypt(creds.accessToken);
-    const client = new CanvasClient(sessionUser.canvasBaseUrl, token);
-    courses = await client.listCourses();
-  } catch (err) {
-    if (err instanceof CanvasError && err.status === 401) {
-      redirect("/onboard?reason=token_expired");
+  if (sessionUser.canvasBaseUrl === "demo") {
+    courses = await new DemoCanvasClient().listCourses();
+  } else {
+    try {
+      const token = decrypt(creds.accessToken);
+      const client = new CanvasClient(sessionUser.canvasBaseUrl, token);
+      courses = await client.listCourses();
+    } catch (err) {
+      if (err instanceof CanvasError && err.status === 401) {
+        redirect("/onboard?reason=token_expired");
+      }
+      throw err;
     }
-    throw err;
   }
 
   return (

@@ -1,0 +1,23 @@
+[
+  {
+    "id": 101,
+    "name": "CS 301 – Algorithms and Data Structures",
+    "course_code": "CS301",
+    "enrollment_term_id": 1,
+    "workflow_state": "available"
+  },
+  {
+    "id": 102,
+    "name": "MATH 241 – Linear Algebra",
+    "course_code": "MATH241",
+    "enrollment_term_id": 1,
+    "workflow_state": "available"
+  },
+  {
+    "id": 103,
+    "name": "ENG 201 – Technical Writing",
+    "course_code": "ENG201",
+    "enrollment_term_id": 1,
+    "workflow_state": "available"
+  }
+]
