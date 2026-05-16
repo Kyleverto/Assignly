@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const token = decrypt(creds.accessToken);
-    const client = new CanvasClient(canvasBaseUrl, token);
+    const client = new CanvasClient(canvasBaseUrl, token, session.user.id);
     await client.validateAndGetUser();
     return NextResponse.json({ ok: true, expiresAt: creds.expiresAt ?? null });
   } catch (err) {

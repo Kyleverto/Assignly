@@ -34,7 +34,7 @@ export default async function DashboardPage() {
   } else {
     try {
       const token = decrypt(creds.accessToken);
-      const client = new CanvasClient(sessionUser.canvasBaseUrl, token);
+      const client = new CanvasClient(sessionUser.canvasBaseUrl, token, sessionUser.id);
       courses = await client.listCourses();
     } catch (err) {
       if (err instanceof CanvasError && err.status === 401) {
