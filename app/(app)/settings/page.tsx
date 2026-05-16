@@ -9,6 +9,7 @@ import { ArrowLeft } from "lucide-react";
 
 interface HealthResponse {
   ok: boolean;
+  demo?: boolean;
   reason?: string;
   expiresAt?: string | null;
 }
@@ -48,49 +49,61 @@ export default function SettingsPage() {
 
       {/* Canvas connection */}
       <section className="flex flex-col gap-4 rounded-xl border border-border bg-card px-5 py-5">
-        <div className="flex items-center justify-between">
+        {health?.demo ? (
           <div>
             <p className="font-medium">Canvas Connection</p>
-            {health === null && (
-              <p className="text-sm text-muted-foreground">Checking…</p>
-            )}
-            {health?.ok && (
-              <p className="text-sm text-green-600 dark:text-green-400">Connected</p>
-            )}
-            {health && !health.ok && (
-              <p className="text-sm text-destructive">
-                {health.reason === "token_expired"
-                  ? "Token expired — update it below"
-                  : health.reason === "no_canvas_connection"
-                    ? "Not connected"
-                    : "Could not reach Canvas"}
-              </p>
-            )}
+            <p className="mt-1 text-sm text-muted-foreground">
+              Demo mode is active. Assignly is using sample data — no real Canvas
+              account is connected.
+            </p>
           </div>
-          {!showUpdateForm && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowUpdateForm(true)}
-            >
-              Update Token
-            </Button>
-          )}
-        </div>
+        ) : (
+          <>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium">Canvas Connection</p>
+                {health === null && (
+                  <p className="text-sm text-muted-foreground">Checking…</p>
+                )}
+                {health?.ok && (
+                  <p className="text-sm text-green-600 dark:text-green-400">Connected</p>
+                )}
+                {health && !health.ok && (
+                  <p className="text-sm text-destructive">
+                    {health.reason === "token_expired"
+                      ? "Token expired — update it below"
+                      : health.reason === "no_canvas_connection"
+                        ? "Not connected"
+                        : "Could not reach Canvas"}
+                  </p>
+                )}
+              </div>
+              {!showUpdateForm && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowUpdateForm(true)}
+                >
+                  Update Token
+                </Button>
+              )}
+            </div>
 
-        {showUpdateForm && (
-          <div className="border-t border-border pt-4">
-            <CanvasTokenForm
-              submitLabel="Save New Token"
-              onSuccess={handleTokenUpdated}
-            />
-            <button
-              onClick={() => setShowUpdateForm(false)}
-              className="mt-3 text-xs text-muted-foreground underline-offset-4 hover:underline"
-            >
-              Cancel
-            </button>
-          </div>
+            {showUpdateForm && (
+              <div className="border-t border-border pt-4">
+                <CanvasTokenForm
+                  submitLabel="Save New Token"
+                  onSuccess={handleTokenUpdated}
+                />
+                <button
+                  onClick={() => setShowUpdateForm(false)}
+                  className="mt-3 text-xs text-muted-foreground underline-offset-4 hover:underline"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+          </>
         )}
       </section>
 

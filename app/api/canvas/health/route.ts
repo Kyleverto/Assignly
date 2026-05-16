@@ -18,6 +18,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ ok: false, reason: "no_canvas_connection" });
   }
 
+  if (canvasBaseUrl === "demo") {
+    return NextResponse.json({ ok: true, demo: true });
+  }
+
   const creds = await db.query.canvasCredentials.findFirst({
     where: eq(canvasCredentials.userId, session.user.id),
   });
